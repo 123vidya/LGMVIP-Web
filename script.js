@@ -1,68 +1,78 @@
-var selectedRow = null;
-
-function onFormSubmit(e) {
-  event.preventDefault();
-  var formData = readFormData();
-  if (selectedRow == null) {
-    insertNewRecord(formData);
-  } else {
-    updateRecord(formData);
-  }
-  resetForm();
+function getHistory(){
+	return document.getElementById("history-value").innerText;
 }
-
-function readFormData() {
-  var formData = {};
-  formData["studentName"] = document.getElementById("studentName").value;
-  formData["collegeName"] = document.getElementById("collegeName").value;
-  formData["Branch"] = document.getElementById("Branch").value;
-  formData["PRN"] = document.getElementById("PRN").value;
-  return formData;
+function printHistory(num){
+	document.getElementById("history-value").innerText=num;
 }
-
-function insertNewRecord(data) {
-  var table = document
-    .getElementById("storeList")
-    .getElementsByTagName("tbody")[0];
-  var newRow = table.insertRow(table.length);
-  cell1 = newRow.insertCell(0);
-  cell1.innerHTML = data.studentName;
-  cell2 = newRow.insertCell(1);
-  cell2.innerHTML = data.collegeName;
-  cell3 = newRow.insertCell(2);
-  cell3.innerHTML = data.Branch;
-  cell4 = newRow.insertCell(3);
-  cell4.innerHTML = data.PRN;
-  cell4 = newRow.insertCell(4);
-  cell4.innerHTML = `<button onClick="onEdit(this)">Edit</button> <button onClick="onDelete(this)">Delete</button>`;
+function getOutput(){
+	return document.getElementById("output-value").innerText;
 }
-
-function onEdit(td) {
-  selectedRow = td.parentElement.parentElement;
-  document.getElementById("studentName").value = selectedRow.cells[0].innerHTML;
-  document.getElementById("collegeName").value = selectedRow.cells[1].innerHTML;
-  document.getElementById("Branch").value = selectedRow.cells[2].innerHTML;
-  document.getElementById("PRN").value = selectedRow.cells[3].innerHTML;
+function printOutput(num){
+	if(num==""){
+		document.getElementById("output-value").innerText=num;
+	}
+	else{
+		document.getElementById("output-value").innerText=getFormattedNumber(num);
+	}	
 }
-function updateRecord(formData) {
-  selectedRow.cells[0].innerHTML = formData.studentName;
-  selectedRow.cells[1].innerHTML = formData.collegeName;
-  selectedRow.cells[2].innerHTML = formData.Branch;
-  selectedRow.cells[3].innerHTML = formData.PRN;
+function getFormattedNumber(num){
+	if(num=="-"){
+		return "";
+	}
+	var n = Number(num);
+	var value = n.toLocaleString("en");
+	return value;
 }
-
-function onDelete(td) {
-  if (confirm("Do you want to delete this record?")) {
-    row = td.parentElement.parentElement;
-    document.getElementById("storeList").deleteRow(row.rowIndex);
-    resetForm();
-  }
+function reverseNumberFormat(num){
+	return Number(num.replace(/,/g,''));
 }
-
-function resetForm() {
-  document.getElementById("studentName").value = "";
-  document.getElementById("collegeName").value = "";
-  document.getElementById("Branch").value = "";
-  document.getElementById("PRN").value = "";
-  selectedRow = null;
+var operator = document.getElementsByClassName("operator");
+for(var i =0;i<operator.length;i++){
+	operator[i].addEventListener('click',function(){
+		if(this.id=="clear"){
+			printHistory("");
+			printOutput("");
+		}
+		else if(this.id=="backspace"){
+			var output=reverseNumberFormat(getOutput()).toString();
+			if(output){//if output has a value
+				output= output.substr(0,output.length-1);
+				printOutput(output);
+			}
+		}
+		else{
+			var output=getOutput();
+			var history=getHistory();
+			if(output==""&&history!=""){
+				if(isNaN(history[history.length-1])){
+					history= history.substr(0,history.length-1);
+				}
+			}
+			if(output!="" || history!=""){
+				output= output==""?output:reverseNumberFormat(output);
+				history=history+output;
+				if(this.id=="="){
+					var result=eval(history);
+					printOutput(result);
+					printHistory("");
+				}
+				else{
+					history=history+this.id;
+					printHistory(history);
+					printOutput("");
+				}
+			}
+		}
+		
+	});
+}
+var number = document.getElementsByClassName("number");
+for(var i =0;i<number.length;i++){
+	number[i].addEventListener('click',function(){
+		var output=reverseNumberFormat(getOutput());
+		if(output!=NaN){ 
+			output=output+this.id;
+			printOutput(output);
+		}
+	});
 }
